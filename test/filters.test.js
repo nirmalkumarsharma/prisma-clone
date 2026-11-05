@@ -49,3 +49,11 @@ test('PNG round-trip', () => {
   assert.equal(back.width, src.width);
   assert.deepEqual(back.data, src.data);
 });
+
+test('FilterRunner falls back to the main thread without Worker support', async () => {
+  const { FilterRunner } = await import('../src/runner.js');
+  const runner = new FilterRunner();
+  assert.equal(runner.fallback, true);
+  const out = await runner.run('mosaic', src, { intensity: 1, seed: 2 });
+  assert.deepEqual(out.data, applyFilter('mosaic', src, { seed: 2 }).data);
+});

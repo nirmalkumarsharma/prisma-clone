@@ -1,7 +1,8 @@
-import { FILTERS, applyFilter, buildPrompt } from './filters.js';
+import { FILTERS, buildPrompt } from './filters.js';
+import { Cancelled, FilterRunner } from './runner.js';
 import { sampleScene } from './sample.js';
 
-const MAX_SIDE = 900; // keeps filtering under ~1-2 s on a laptop
+const MAX_SIDE = 1200; // filtering runs in a worker; this caps per-filter time at a few seconds
 const THUMB = 140;
 
 const $ = (id) => document.getElementById(id);
@@ -14,10 +15,10 @@ const state = {
   filter: FILTERS[0].id,
   intensity: 1,
   seed: 1,
-  job: 0,
 };
 
-const nextFrame = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+const mainRunner = new FilterRunner();
+const thumbRunner = new FilterRunner();
 
 function toImageData(img) {
   return img instanceof ImageData ? img : new ImageData(img.data, img.width, img.height);
@@ -42,50 +43,53 @@ function draw(img) {
 
 async function render() {
   if (!state.source) return;
-  const job = ++state.job;
+  mainRunner.cancel();
   $('busy').hidden = false;
-  await nextFrame();
-  if (job !== state.job) return;
-  const out = applyFilter(state.filter, state.source, { intensity: state.intensity, seed: state.seed });
-  if (job !== state.job) return;
-  state.styled = out;
-  draw(out);
-  $('busy').hidden = true;
-}
-
-async function renderThumbs() {
-  if (!state.source) return;
-  const bitmap = document.createElement('canvas');
-  bitmap.width = state.source.width;
-  bitmap.height = state.source.height;
-  bitmap.getContext('2d').putImageData(toImageData(state.source), 0, 0);
-  // Center-square crop for the tiles.
-  const side = Math.min(bitmap.width, bitmap.height);
-  const sq = document.createElement('canvas');
-  sq.width = sq.height = THUMB;
-  sq.getContext('2d').drawImage(
-    bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, THUMB, THUMB,
-  );
-  const small = sq.getContext('2d').getImageData(0, 0, THUMB, THUMB);
-  const job = state.job;
-  for (const f of FILTERS) {
-    await nextFrame();
-    if (job !== state.job && state.job - job > 1) return; // a newer source arrived
-    const tile = document.querySelector(`[data-filter="${f.id}"] canvas`);
-    tile.getContext('2d').putImageData(toImageData(applyFilter(f.id, small, { seed: state.seed })), 0, 0);
+  try {
+    const out = await mainRunner.run(state.filter, state.source, { intensity: state.intensity, seed: state.seed });
+    state.styled = out;
+    draw(out);
+    $('busy').hidden = true;
+  } catch (err) {
+    if (err instanceof Cancelled) return; // a newer render took over
+    $('busy').hidden = true;
+    console.error(err);
   }
 }
 
-async function setSource(img) {
+function renderThumbs() {
+  if (!state.source) return;
+  thumbRunner.cancel();
+  const full = document.createElement('canvas');
+  full.width = state.source.width;
+  full.height = state.source.height;
+  full.getContext('2d').putImageData(toImageData(state.source), 0, 0);
+  // Center-square crop for the tiles.
+  const side = Math.min(full.width, full.height);
+  const sq = document.createElement('canvas');
+  sq.width = sq.height = THUMB;
+  sq.getContext('2d').drawImage(
+    full, (full.width - side) / 2, (full.height - side) / 2, side, side, 0, 0, THUMB, THUMB,
+  );
+  const small = sq.getContext('2d').getImageData(0, 0, THUMB, THUMB);
+  for (const f of FILTERS) {
+    thumbRunner.run(f.id, small, { intensity: 1, seed: state.seed }).then((out) => {
+      document.querySelector(`[data-filter="${f.id}"] canvas`).getContext('2d').putImageData(toImageData(out), 0, 0);
+    }, (err) => { if (!(err instanceof Cancelled)) console.error(err); });
+  }
+}
+
+function setSource(img) {
   state.source = img;
-  await render();
+  state.styled = null;
+  render();
   renderThumbs();
 }
 
 async function loadFile(file) {
   if (!file || !file.type.startsWith('image/')) return;
   const bitmap = await createImageBitmap(file);
-  await setSource(fitCanvasFromBitmap(bitmap, MAX_SIDE));
+  setSource(fitCanvasFromBitmap(bitmap, MAX_SIDE));
 }
 
 function updatePrompt() {
@@ -134,7 +138,8 @@ function wire() {
 
   $('reseed').addEventListener('click', () => {
     state.seed = (state.seed % 9973) + 1;
-    render().then(renderThumbs);
+    render();
+    renderThumbs();
   });
 
   const showOriginal = () => state.source && draw(state.source);

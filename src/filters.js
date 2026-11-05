@@ -489,17 +489,33 @@ function stainedGlass(src, { seed = 1 } = {}) {
   const seg = new Int32Array(n);
   for (let p = 0; p < n; p++) seg[p] = vor.index[p] * BANDS + Math.min(BANDS - 1, (tone[p] * BANDS) | 0);
   const segCount = vor.count * BANDS;
+  // Fold slivers (under ~8% of a cell) into the cell's dominant piece, so busy
+  // textures don't produce squiggly lead lines.
+  const area = new Int32Array(segCount);
+  for (let p = 0; p < n; p++) area[seg[p]]++;
+  const minArea = cell * cell * 0.08;
+  for (let p = 0; p < n; p++) {
+    if (area[seg[p]] >= minArea) continue;
+    const base = vor.index[p] * BANDS;
+    let best = base;
+    for (let b = 1; b < BANDS; b++) if (area[base + b] > area[best]) best = base + b;
+    seg[p] = best;
+  }
   const sums = new Float64Array(segCount * 4);
   for (let p = 0; p < n; p++) {
     const k = seg[p] * 4;
     sums[k] += rgb[p * 3]; sums[k + 1] += rgb[p * 3 + 1]; sums[k + 2] += rgb[p * 3 + 2]; sums[k + 3]++;
   }
   // Lead came: Voronoi borders plus every boundary between pieces.
+  // Only where tone really changes: a gentle gradient hovering at a band
+  // threshold would otherwise leave wiggly lead lines.
+  const toneEdge = sobel(tone, w, h);
   const split = new Float32Array(n);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const p = y * w + x;
-      if ((x + 1 < w && seg[p + 1] !== seg[p]) || (y + 1 < h && seg[p + w] !== seg[p])) split[p] = 1;
+      const boundary = (x + 1 < w && seg[p + 1] !== seg[p]) || (y + 1 < h && seg[p + w] !== seg[p]);
+      if (boundary) split[p] = smoothstep(0.04, 0.1, toneEdge[p]);
     }
   }
   const splitLead = blur(dilate(split, w, h, 0.9 * s), w, h, 0.6, 1, 1);

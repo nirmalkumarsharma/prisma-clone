@@ -27,7 +27,7 @@ ES modules need to be served over HTTP:
 npm start
 ```
 
-Then open http://localhost:8080. You can upload, drag and drop, or paste an image, or start from the built-in sample. Pick a filter from the live thumbnail strip, set the intensity, hold **compare** to see the original, **re-roll** the strokes and tiles, and download a PNG. Images are scaled down to 900 px on the long side to keep things fast.
+Then open http://localhost:8080. You can upload, drag and drop, or paste an image, or start from the built-in sample. Pick a filter from the live thumbnail strip, set the intensity, hold **compare** to see the original, **re-roll** the strokes and tiles, and download a PNG. Filtering runs in a Web Worker so the page stays responsive, and a newer request cancels one still running. Images are scaled down to 1200 px on the long side. Browsers without module workers fall back to filtering on the main thread.
 
 ### Prompt builder
 
