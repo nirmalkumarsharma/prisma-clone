@@ -1,0 +1,49 @@
+# Generate the Xcode project with XcodeGen:  brew install xcodegen && xcodegen generate
+name: PrismaClone
+options:
+  bundleIdPrefix: com.prismaclone
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+packages:
+  PrismaKit:
+    path: PrismaKit
+targets:
+  PrismaClone:
+    type: application
+    platform: iOS
+    sources:
+      - PrismaApp
+    dependencies:
+      - package: PrismaKit
+    scheme: {}
+    info:
+      path: PrismaApp/Info.plist
+      properties:
+        CFBundleDisplayName: Prisma Clone
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIUserInterfaceStyle: Dark
+        NSPhotoLibraryAddUsageDescription: Prisma Clone saves your artwork to your photo library.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.prismaclone.app
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_PREVIEWS: YES
+        # Set your team here (or in Xcode > Signing & Capabilities) to run on a device.
+        DEVELOPMENT_TEAM: ""

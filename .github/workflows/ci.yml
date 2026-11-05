@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      # The native ports are tested against these; fail if they're stale.
+      - run: npm run fixtures && git diff --exit-code fixtures/
+
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :prismakit:test :app:verifyPaparazziDebug :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prisma-clone-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  ios:
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: ios
+    steps:
+      - uses: actions/checkout@v4
+      - name: Engine tests
+        run: swift test --package-path PrismaKit
+      - name: Generate Xcode project
+        run: brew install xcodegen && xcodegen generate
+      - name: Build app for the simulator
+        run: |
+          xcodebuild -project PrismaClone.xcodeproj -scheme PrismaClone \
+            -destination 'generic/platform=iOS Simulator' -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO build

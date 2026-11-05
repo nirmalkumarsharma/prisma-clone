@@ -6,7 +6,8 @@
   "bin": { "prisma": "cli/prisma.js" },
   "scripts": {
     "start": "python3 -m http.server 8080",
-    "test": "node --test"
+    "test": "node --test 'test/**/*.test.js'",
+    "fixtures": "node scripts/make-fixtures.js"
   },
   "license": "MIT"
 }

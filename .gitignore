@@ -1,2 +1,14 @@
 node_modules/
 sample-*.png
+
+# Android
+android/.gradle/
+android/**/build/
+android/local.properties
+.kotlin/
+
+# iOS (the Xcode project is generated from ios/project.yml by XcodeGen)
+ios/*.xcodeproj/
+ios/**/.build/
+ios/**/.swiftpm/
+DerivedData/

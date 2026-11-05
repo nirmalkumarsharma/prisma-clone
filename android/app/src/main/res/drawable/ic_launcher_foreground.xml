@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A round stained-glass pane in the filter palette. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group>
+        <clip-path android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0 z" />
+        <path android:fillColor="#1F63B0" android:pathData="M20,20 L58,20 L62,40 L36,44 L20,40 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#0F8A8C" android:pathData="M58,20 L88,20 L88,36 L62,40 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#F5C85A" android:pathData="M62,40 L88,36 L88,66 L66,70 L50,58 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#4A1E8C" android:pathData="M36,44 L62,40 L50,58 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#9E0F2A" android:pathData="M20,40 L36,44 L50,58 L42,74 L40,88 L20,88 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#C8650F" android:pathData="M66,70 L88,66 L88,88 L64,88 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+        <path android:fillColor="#0F7A3C" android:pathData="M50,58 L66,70 L64,88 L40,88 L42,74 Z"
+            android:strokeColor="#0E0D12" android:strokeWidth="2.4" android:strokeLineJoin="round" />
+    </group>
+    <path android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0 z"
+        android:strokeColor="#F1EEE8" android:strokeWidth="2.5" />
+</vector>

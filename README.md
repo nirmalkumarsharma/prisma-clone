@@ -1,6 +1,15 @@
 # Prisma Clone
 
-Prisma-style (c. 2016) artistic filters for photos. Every image is fully re-textured into one bold visual identity, while its composition and main shapes are kept. It runs in the browser with no build step, and from the command line with no dependencies.
+Prisma-style (c. 2016) artistic filters for photos. Every image is fully re-textured into one bold visual identity, while its composition and main shapes are kept.
+
+It runs on four platforms, all sharing one filter design:
+
+| Platform | Where | Stack |
+|---|---|---|
+| Web | `index.html`, `src/` | Plain JS, Web Worker, no build step |
+| Android | `android/` | Kotlin, Jetpack Compose, minSdk 29 |
+| iOS | `ios/` | Swift, SwiftUI, iOS 16+ |
+| CLI | `cli/` | Node, no dependencies |
 
 ![All six filters applied to the built-in sample scene](docs/preview.png)
 
@@ -34,6 +43,53 @@ Then open http://localhost:8080. You can upload, drag and drop, or paste an imag
 Type a subject to get a text-to-image prompt in the selected style, following this template:
 
 > A dramatic [Filter]-style artistic rendering of [Subject]. Rendered in [Medium] with [Texture]. Features a color palette dominated by [Colors], high-contrast chiaroscuro lighting, and bold visual contours. Textured background reminiscent of [Background], with vibrant, expressive art stylization applied uniformly across all elements.
+
+## Android
+
+The app is in `android/`. The filter engine is the pure-Kotlin `prismakit` module, and the Compose UI is in `app`.
+
+- Pick a photo with the system photo picker (no permissions needed), or share an image into the app from any other app.
+- Live filter thumbnails, an intensity slider, press-and-hold to compare, and re-roll.
+- **Save** writes a PNG to *Pictures/Prisma Clone*. **Share** opens the system share sheet.
+- Prompt builder with copy to clipboard.
+
+Open `android/` in Android Studio, or build from the command line:
+
+```bash
+cd android && ./gradlew :app:assembleDebug
+```
+
+The APK is written to `android/app/build/outputs/apk/debug/`. Tests:
+
+```bash
+cd android && ./gradlew :prismakit:test :app:verifyPaparazziDebug
+```
+
+`:app:verifyPaparazziDebug` renders the real Compose UI on the JVM and compares it with the snapshots in `app/src/test/snapshots/`. After an intended UI change, re-record them with `:app:recordPaparazziDebug`.
+
+## iOS
+
+The app is in `ios/`. The filter engine is the `PrismaKit` Swift package, and the SwiftUI app is in `PrismaApp`. It has the same features as Android: PhotosPicker, live thumbnails, intensity, press-and-hold compare, re-roll, **Save** to Photos (asks for add-only access), **Share**, and the prompt builder.
+
+The Xcode project is generated from `ios/project.yml` with [XcodeGen](https://github.com/yonaskolb/XcodeGen):
+
+```bash
+brew install xcodegen
+```
+
+```bash
+cd ios && xcodegen generate && open PrismaClone.xcodeproj
+```
+
+To run on a device, choose your team under *Signing & Capabilities*. Engine tests run on macOS or Linux:
+
+```bash
+swift test --package-path ios/PrismaKit
+```
+
+## How the platforms stay in sync
+
+`src/filters.js` is the reference implementation. `android/prismakit` and `ios/PrismaKit` are line-for-line ports that copy its hash, noise and rounding rules exactly. `npm run fixtures` writes the JS engine's output for a fixed scene to `fixtures/`, and the Kotlin and Swift test suites check their own output against those files. The sample scene must match byte for byte. Each filter must match within a tiny tolerance, because a last-digit floating-point difference can flip an occasional edge pixel. If you change a filter, change it in all three places, then run `npm run fixtures` and every platform's tests. CI does all of this on each push.
 
 ## CLI
 
