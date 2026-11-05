@@ -1,0 +1,12 @@
+{
+  "name": "prisma-clone",
+  "version": "1.0.0",
+  "description": "Prisma-style artistic photo filters (Udnie, Wave, Mosaic, Candy, Gothic, Tears) for the browser and the command line.",
+  "type": "module",
+  "bin": { "prisma": "cli/prisma.js" },
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}

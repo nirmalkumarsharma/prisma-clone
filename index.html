@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prisma Clone</title>
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <header>
+    <h1>Prisma<span>clone</span></h1>
+    <div class="actions">
+      <label class="btn">Upload photo<input id="file" type="file" accept="image/*" hidden></label>
+      <button id="sample" class="btn ghost">Use sample</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="stage" id="stage">
+      <canvas id="canvas" aria-label="Styled image"></canvas>
+      <div class="busy" id="busy" hidden>Painting…</div>
+      <p class="drop-hint">Drop an image anywhere</p>
+    </section>
+
+    <section class="controls">
+      <div class="row">
+        <label for="intensity">Intensity <output id="intensityOut">100%</output></label>
+        <input id="intensity" type="range" min="40" max="100" value="100">
+      </div>
+      <div class="row buttons">
+        <button id="compare" class="btn ghost" title="Hold to see the original">Hold to compare</button>
+        <button id="reseed" class="btn ghost" title="Re-roll brushstrokes and tiles">Re-roll</button>
+        <button id="download" class="btn">Download PNG</button>
+      </div>
+    </section>
+
+    <nav class="filters" id="filters" aria-label="Filters"></nav>
+
+    <section class="prompt">
+      <h2>Prompt builder</h2>
+      <p class="muted">Describe a subject to get a text-to-image prompt in the selected style.</p>
+      <input id="subject" type="text" placeholder="e.g. a lighthouse on a cliff during a storm">
+      <textarea id="prompt" rows="5" readonly></textarea>
+      <button id="copy" class="btn ghost">Copy prompt</button>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
