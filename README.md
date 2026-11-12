@@ -7,7 +7,7 @@ It runs on four platforms, all sharing one filter design:
 | Platform | Where | Stack |
 |---|---|---|
 | Web | `index.html`, `src/` | Plain JS, Web Worker, no build step |
-| Android | `android/` | Kotlin, Jetpack Compose, minSdk 29 |
+| Android | `android/` | Kotlin, Jetpack Compose; runs on Android 10–16, targets API 36 |
 | iOS | `ios/` | Swift, SwiftUI, iOS 16+ |
 | CLI | `cli/` | Node, no dependencies |
 
@@ -59,13 +59,30 @@ Open `android/` in Android Studio, or build from the command line:
 cd android && ./gradlew :app:assembleDebug
 ```
 
-The APK is written to `android/app/build/outputs/apk/debug/`. Tests:
+The APK is written to `android/app/build/outputs/apk/debug/`.
+
+The app compiles against and targets Android 16 (API 36), and installs on Android 10 (API 29) and later. It draws edge-to-edge, as Android 15+ requires, and its only native library (from AndroidX graphics) is 16 KB page-aligned for Android 16 devices.
+
+For a small, optimized release APK, sign it with your own key. The key is passed as Gradle properties and never committed:
 
 ```bash
-cd android && ./gradlew :prismakit:test :app:verifyPaparazziDebug
+keytool -genkeypair -keystore prisma-release.jks -alias prisma -keyalg RSA -keysize 3072 -validity 10000
 ```
 
-`:app:verifyPaparazziDebug` renders the real Compose UI on the JVM and compares it with the snapshots in `app/src/test/snapshots/`. After an intended UI change, re-record them with `:app:recordPaparazziDebug`.
+```bash
+cd android && ./gradlew :app:assembleRelease -Pprisma.keystore=/path/to/prisma-release.jks -Pprisma.keystore.password=YOUR_PASSWORD -Pprisma.key.alias=prisma
+```
+
+Keep the keystore safe: Android only installs updates signed with the same key.
+
+Tests:
+
+```bash
+cd android && ./gradlew :prismakit:test :app:testDebugUnitTest
+```
+
+- `Android16LaunchTest` uses Robolectric to boot the real `MainActivity` on an Android 16 (API 36) runtime. It waits for the sample to be painted, scrolls down, taps the Wave filter, and checks the new rendering.
+- `ScreenshotTest` (Paparazzi) renders the real Compose UI on the JVM and compares it with the snapshots in `app/src/test/snapshots/`. After an intended UI change, re-record them with `:app:recordPaparazziDebug`.
 
 ## iOS
 
