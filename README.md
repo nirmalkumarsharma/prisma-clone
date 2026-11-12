@@ -53,7 +53,7 @@ The app is in `android/`. The filter engine is the pure-Kotlin `prismakit` modul
 - **Save** writes a PNG to *Pictures/Prisma Clone*. **Share** opens the system share sheet.
 - Prompt builder with copy to clipboard.
 
-Open `android/` in Android Studio, or build from the command line:
+Open `android/` in Android Studio, or build from the command line. Gradle needs JDK 21 or newer, which recent Android Studio versions bundle:
 
 ```bash
 cd android && ./gradlew :app:assembleDebug

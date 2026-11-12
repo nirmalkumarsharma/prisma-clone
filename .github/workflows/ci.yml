@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
       - uses: gradle/actions/setup-gradle@v4
       - run: ./gradlew :prismakit:test :app:verifyPaparazziDebug :app:assembleDebug
       - uses: actions/upload-artifact@v4
